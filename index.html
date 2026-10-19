@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Formulary Challenge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column of hospital request forms; a navy committee band on top carries round, progress and score. */
+:root{
+  --ground:#EDF2F0; --paper:#FFFFFF; --ink:#16213A; --ink-2:#4B5770; --line:#C9D4D3;
+  --band:#1D2350; --band-fg:#F2F4FA; --band-dim:#B4BAD8;
+  --rx:#0B7A63; --rx-soft:#DCF0EA; --on-rx:#FFFFFF;
+  --no:#B5382C; --no-soft:#F8E3DF;
+  --hint:#8F6208; --hint-soft:#F7EBC8;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C1221; --paper:#151E34; --ink:#E8EDF5; --ink-2:#A5B0C6; --line:#2B3856;
+    --band:#090E1C; --band-fg:#F2F4FA; --band-dim:#8E97B8;
+    --rx:#48C9A7; --rx-soft:#11352E; --on-rx:#05241D;
+    --no:#F2867C; --no-soft:#3A1D1C;
+    --hint:#E6B85A; --hint-soft:#3A2F13;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1221; --paper:#151E34; --ink:#E8EDF5; --ink-2:#A5B0C6; --line:#2B3856;
+  --band:#090E1C; --band-fg:#F2F4FA; --band-dim:#8E97B8;
+  --rx:#48C9A7; --rx-soft:#11352E; --on-rx:#05241D;
+  --no:#F2867C; --no-soft:#3A1D1C;
+  --hint:#E6B85A; --hint-soft:#3A2F13;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.12;margin:0}
+p{margin:0}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--rx);outline-offset:2px}
+
+.band{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--band);color:var(--band-fg)}
+.band-in{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.05rem;letter-spacing:.01em}
+.band-meta{margin-left:auto;display:flex;gap:16px;font-family:var(--mono);font-size:.8rem;color:var(--band-dim)}
+.band-meta b{color:var(--band-fg);font-weight:600}
+.track{flex-basis:100%;height:4px;background:rgba(255,255,255,.16);border-radius:2px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--band-fg);width:0;transition:width .3s}
+
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:24px 56px;display:flex;flex-direction:column;gap:20px;overflow-x:clip}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.lead{font-size:1.06rem;color:var(--ink-2);max-width:62ch}
+.hero h1{font-size:clamp(2.2rem,8vw,3.6rem);font-weight:800;letter-spacing:-.02em}
+.hero{display:flex;flex-direction:column;gap:12px}
+
+.form{background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.form-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:9px 16px;border-bottom:1px dashed var(--line);font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.form-body{padding:18px 16px 20px;display:flex;flex-direction:column;gap:16px}
+.form-body h2{font-size:1.45rem;font-weight:800}
+.memo{max-width:64ch}
+
+.rounds{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.rounds li{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:baseline;padding:12px 0;border-top:1px solid var(--line)}
+.rounds li:first-child{border-top:0;padding-top:0}
+.rounds .n{font-family:var(--mono);font-weight:600;color:var(--rx)}
+.rounds .t{font-weight:600}
+.rounds .p{font-family:var(--mono);font-size:.82rem;color:var(--ink-2);white-space:nowrap}
+.rounds .d{grid-column:2 / -1;color:var(--ink-2);font-size:.94rem}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-family:var(--mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.field input,.num input,textarea{background:var(--ground);border:1px solid var(--line);border-radius:3px;padding:10px 12px;width:100%;min-width:0}
+
+.btn{appearance:none;border:1px solid var(--rx);background:var(--rx);color:var(--on-rx);font-weight:600;padding:11px 20px;border-radius:3px;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink-2);filter:none}
+.btn[disabled]{opacity:.5;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.small{font-size:.88rem;color:var(--ink-2)}
+a{color:var(--rx)}
+
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.choice{appearance:none;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.choice:hover:not([disabled]){border-color:var(--rx)}
+.choice .abbr{font-family:var(--mono);font-weight:600;font-size:1.05rem}
+.choice .full{font-size:.84rem;color:var(--ink-2)}
+.choice[disabled]{cursor:default}
+.choice.right{border-color:var(--rx);background:var(--rx-soft)}
+.choice.wrong{border-color:var(--no);background:var(--no-soft)}
+.options{display:flex;flex-direction:column;gap:10px}
+.options .choice{flex-direction:row;gap:12px;align-items:baseline}
+.options .key{font-family:var(--mono);font-weight:600;color:var(--ink-2)}
+@media (max-width:420px){.choices{grid-template-columns:1fr}}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:3px}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{padding:8px 12px;text-align:right;vertical-align:top;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+thead th{border-top:0;font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+td.numc{font-family:var(--mono)}
+
+.step{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.step .q{font-weight:600;max-width:62ch}
+.step .tag{font-family:var(--mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.num{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.num .box{position:relative;flex:1 1 180px;max-width:260px;min-width:0}
+.num input{font-family:var(--mono);font-size:1.05rem}
+.unit{font-family:var(--mono);font-size:.86rem;color:var(--ink-2)}
+.note{padding:10px 12px;border-radius:3px;font-size:.94rem}
+.note.hint{background:var(--hint-soft);color:var(--ink);border-left:3px solid var(--hint)}
+.note.bad{background:var(--no-soft);border-left:3px solid var(--no)}
+.note.good{background:var(--rx-soft);border-left:3px solid var(--rx)}
+.note .mono{font-family:var(--mono)}
+.done-line{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-family:var(--mono);font-size:.9rem}
+.pts{font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
+
+.stamp{align-self:flex-start;font-family:var(--mono);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:.84rem;padding:5px 12px;margin:4px 0 4px 8px;border:2px solid currentColor;border-radius:3px;transform-origin:left center;transform:rotate(-2deg);animation:stamp .28s cubic-bezier(.2,1.6,.4,1) both}
+.stamp.ok{color:var(--rx)} .stamp.half{color:var(--hint)} .stamp.no{color:var(--no)}
+@keyframes stamp{from{transform:rotate(-7deg) scale(1.5);opacity:0}to{transform:rotate(-2deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}.track i{transition:none}}
+
+.score-big{font-family:var(--display);font-weight:800;font-size:clamp(3rem,13vw,5rem);line-height:1;letter-spacing:-.03em}
+.score-big small{font-size:.32em;font-weight:600;color:var(--ink-2);letter-spacing:0;font-family:var(--mono)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:baseline}
+.bar .lbl{font-weight:600}
+.bar .lbl span{font-weight:400;color:var(--ink-2);font-size:.9rem}
+.bar .val{font-family:var(--mono);font-size:.86rem;color:var(--ink-2)}
+.bar .rail{grid-column:1 / -1;height:10px;background:var(--ground);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.bar .rail i{display:block;height:100%;background:var(--rx)}
+.bar.low .rail i{background:var(--no)}
+.bar.mid .rail i{background:var(--hint)}
+.review{display:flex;flex-direction:column;gap:0}
+.review details{border-top:1px solid var(--line);padding:10px 0}
+.review summary{cursor:pointer;font-weight:600}
+.review summary span{font-family:var(--mono);font-weight:400;font-size:.82rem;color:var(--ink-2);margin-left:6px;white-space:nowrap}
+.review .ans{margin-top:8px;display:flex;flex-direction:column;gap:6px;font-size:.95rem;max-width:66ch}
+.code{font-family:var(--mono);font-size:.8rem;word-break:break-all;background:var(--ground);border:1px solid var(--line);border-radius:3px;padding:10px 12px;user-select:all}
+textarea{font-family:var(--mono);font-size:.82rem;min-height:130px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.grid2>*{min-width:0}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-in">
+    <span class="brand">Formulary Challenge</span>
+    <span class="band-meta" id="bandMeta"></span>
+    <span class="track" aria-hidden="true"><i id="trackFill"></i></span>
+  </div>
+</header>
+<main class="wrap" id="app" aria-live="polite"></main>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- content ---------- */
+var TYPES={CMA:"Cost-minimization analysis",CEA:"Cost-effectiveness analysis",CUA:"Cost-utility analysis",CBA:"Cost-benefit analysis"};
+var COMP={K:"Choosing the analysis",S:"Running the numbers",J:"Interpreting and deciding"};
+var COMPSUB={K:"knowledge",S:"calculation skills",J:"judgment"};
+
+var K=[
+ {id:"k1",type:"CMA",label:"Generic amlodipine",text:"Pharmacy wants to switch from brand-name amlodipine to a generic. Bioequivalence studies show the same blood-pressure control and the same side-effect profile. Only the costs differ.",why:"Outcomes are proven equivalent, so only costs need comparing. That is a cost-minimization analysis."},
+ {id:"k2",type:"CEA",label:"Cost per mmHg",text:"Two antihypertensives are compared. The trial reports the average fall in systolic blood pressure (mmHg) for each drug, and the committee wants the cost of each extra mmHg.",why:"The outcome is one natural clinical unit (mmHg). Cost per natural unit is cost-effectiveness analysis."},
+ {id:"k3",type:"CUA",label:"Chemotherapy: survival vs. toxicity",text:"Two chemotherapy regimens for breast cancer. One adds more months of life but causes severe nausea and fatigue. The other is gentler but adds fewer months.",why:"The regimens differ in both length and quality of life. QALYs combine the two, so this needs a cost-utility analysis."},
+ {id:"k4",type:"CBA",label:"Clinic or vaccination campaign",text:"The hospital can fund either a smoking-cessation clinic or an adult vaccination campaign. The director asks which one returns more riyals for every riyal spent.",why:"Two unrelated programs with different outcomes, compared in money on both sides. Benefits in riyals per riyal spent is a cost-benefit analysis."},
+ {id:"k5",type:"CEA",label:"Cost per patient at HbA1c target",text:"A new antidiabetic is compared with the current add-on therapy. The result will be reported as cost per additional patient reaching HbA1c below 7%.",why:"Patients reaching a clinical target is a natural unit. Cost per additional success is cost-effectiveness analysis."},
+ {id:"k6",type:"CMA",label:"IV vs. oral antibiotic",text:"The same antibiotic is available as an IV infusion and as an oral tablet. In patients who can swallow, a trial showed equal cure rates and equal safety.",why:"Same drug, equal outcomes. Compare total costs only: cost-minimization analysis."},
+ {id:"k7",type:"CUA",label:"Biologic for rheumatoid arthritis",text:"A new biologic for rheumatoid arthritis does not change how long patients live, but it greatly improves pain and daily function. The outcome must reflect how patients value that improvement.",why:"The treatment changes quality of life only, and patient preference (utility) is the outcome. That is cost-utility analysis."},
+ {id:"k8",type:"CBA",label:"Anticoagulation clinic proposal",text:"A proposal for a pharmacist-run anticoagulation clinic values its benefits as avoided admission costs and patients' regained workdays, and compares that total with the clinic's running cost.",why:"Both costs and benefits are expressed in money, and the question is whether the program is worth starting. That is cost-benefit analysis."}
+];
+
+var CASES=[
+ {id:"A",type:"CMA",ref:"Request 2A",title:"Antibiotic route switch",
+  memo:"Drug X (oral) and Drug Y (IV) contain the same antibiotic. A hospital trial found the same cure rate (92%) and the same safety for both. Outcomes are equivalent, so run a cost-minimization analysis.",
+  head:["Cost per treatment course (SR)","Drug X (oral)","Drug Y (IV)"],
+  rows:[["Drug acquisition","180","120"],["Administration (nursing time, supplies)","10","150"],["Laboratory monitoring","40","40"]],
+  steps:[
+   {id:"a1",kind:"num",label:"Total cost, Drug X",q:"What is the total cost of one course of Drug X?",unit:"SR",ans:230,hint:"Add every cost row for Drug X, not only the acquisition price.",sol:"180 + 10 + 40 = SR 230"},
+   {id:"a2",kind:"num",label:"Total cost, Drug Y",q:"What is the total cost of one course of Drug Y?",unit:"SR",ans:310,hint:"Add every cost row for Drug Y.",sol:"120 + 150 + 40 = SR 310"},
+   {id:"a3",kind:"num",label:"Annual saving",q:"The hospital treats 500 patients a year. How much does it save per year by using the cheaper option for all of them?",unit:"SR per year",ans:40000,hint:"Saving per course × number of courses.",sol:"(310 − 230) × 500 = SR 40,000 per year"},
+   {id:"a4",kind:"mcq",label:"Recommendation",q:"What do you recommend to the committee?",
+    opts:["Drug X. Outcomes are equal and its total cost per course is lower.","Drug Y. Its acquisition price is lower.","Neither yet. An ICER must be calculated first.","Drug Y. IV drugs are always more effective."],
+    why:"With equivalent outcomes, the choice rests on total cost, not the purchase price. Drug Y is cheaper to buy but costs SR 80 more per course once administration is included."}
+  ]},
+ {id:"B",type:"CEA",ref:"Request 2B",title:"H. pylori eradication",
+  memo:"Gastroenterology asks to replace the standard regimen with a new one. The outcome is the number of patients whose infection is eradicated. Run a cost-effectiveness analysis.",
+  head:["Per 100 patients treated","Standard regimen","New regimen"],
+  rows:[["Total cost (SR)","40,000","70,000"],["Patients with eradication","70","85"]],
+  steps:[
+   {id:"b1",kind:"num",label:"Incremental cost",q:"What is the incremental cost of the new regimen per 100 patients?",unit:"SR",ans:30000,hint:"Cost of new − cost of standard.",sol:"70,000 − 40,000 = SR 30,000"},
+   {id:"b2",kind:"num",label:"Incremental effect",q:"How many additional patients are cured per 100 treated with the new regimen?",unit:"patients",ans:15,hint:"Cures with new − cures with standard.",sol:"85 − 70 = 15 additional patients"},
+   {id:"b3",kind:"num",label:"ICER",q:"What is the incremental cost-effectiveness ratio (ICER)?",unit:"SR per additional patient cured",ans:2000,hint:"ICER = incremental cost ÷ incremental effect.",sol:"30,000 ÷ 15 = SR 2,000 per additional patient cured"},
+   {id:"b4",kind:"mcq",label:"Presenting the ICER",q:"How do you present this result to the committee?",
+    opts:["The new regimen cures more patients at a higher cost. Each additional cure costs SR 2,000, so adopt it if the hospital judges that worth paying.","The new regimen is dominant, so adopt it without further discussion.","Each patient treated with the new regimen costs SR 2,000.","The standard regimen is dominant because it is cheaper."],
+    why:"The new regimen is more effective and more costly, so neither option dominates. The ICER is the price of one extra cure, and the decision depends on what the hospital is willing to pay for it."}
+  ]},
+ {id:"C",type:"CUA",ref:"Request 2C",title:"Advanced heart failure",
+  memo:"Cardiology requests Drug B in place of Drug A. The two differ in survival and in how patients feel. The hospital's threshold is SR 50,000 per QALY. Run a cost-utility analysis.",
+  head:["Per patient","Drug A (current)","Drug B (new)"],
+  rows:[["Total treatment cost (SR)","30,000","60,000"],["Average survival","4 years","5 years"],["Quality of life","Utility 0.5","30% below perfect health"]],
+  steps:[
+   {id:"c1",kind:"num",label:"QALYs, Drug A",q:"How many QALYs does a patient gain with Drug A?",unit:"QALYs",ans:2,hint:"QALYs = years of life × utility.",sol:"4 × 0.5 = 2.0 QALYs"},
+   {id:"c2",kind:"num",label:"QALYs, Drug B",q:"How many QALYs does a patient gain with Drug B?",unit:"QALYs",ans:3.5,hint:"A 30% reduction leaves a utility of 1 − 0.30 = 0.70.",sol:"5 × 0.7 = 3.5 QALYs (utility is what remains: 1 − 0.30 = 0.70)"},
+   {id:"c3",kind:"num",label:"ICUR",q:"What is the incremental cost-utility ratio (ICUR) of Drug B compared with Drug A?",unit:"SR per QALY gained",ans:20000,hint:"ICUR = difference in cost ÷ difference in QALYs.",sol:"(60,000 − 30,000) ÷ (3.5 − 2.0) = 30,000 ÷ 1.5 = SR 20,000 per QALY"},
+   {id:"c4",kind:"mcq",label:"Decision against threshold",q:"What is your recommendation?",
+    opts:["Adopt Drug B. SR 20,000 per QALY is below the SR 50,000 threshold, so it is cost-effective.","Reject Drug B. Its ICUR is above the threshold.","Adopt Drug B because it is dominant.","No decision is possible until QALYs are converted into riyals."],
+    why:"Drug B costs more and gives more QALYs, so it is not dominant. Its ICUR of SR 20,000 per QALY is below the SR 50,000 threshold, which makes it cost-effective."}
+  ]},
+ {id:"D",type:"CBA",ref:"Request 2D",title:"Pharmacist-led anticoagulation clinic",
+  memo:"The pharmacy department proposes a new clinic. The analysis covers one year and takes the societal perspective, so patients' regained workdays count as a benefit. Run a cost-benefit analysis.",
+  head:["One year (SR)","Amount"],
+  rows:[["Cost: pharmacist salary and benefits","120,000"],["Cost: point-of-care testing supplies","30,000"],["Benefit: 40 admissions avoided × 6,000","240,000"],["Benefit: 300 workdays regained × 200","60,000"]],
+  steps:[
+   {id:"d1",kind:"num",label:"Total benefits",q:"What are the total benefits for the year?",unit:"SR",ans:300000,hint:"Add both benefit rows.",sol:"240,000 + 60,000 = SR 300,000"},
+   {id:"d2",kind:"num",label:"Net benefit",q:"What is the net benefit?",unit:"SR",ans:150000,hint:"Net benefit = total benefits − total costs. Total costs are 120,000 + 30,000.",sol:"300,000 − 150,000 = SR 150,000"},
+   {id:"d3",kind:"num",label:"Benefit-to-cost ratio",q:"What is the benefit-to-cost ratio?",unit:": 1",ans:2,hint:"B:C = total benefits ÷ total costs.",sol:"300,000 ÷ 150,000 = 2.0 (SR 2 returned for every SR 1 spent)"},
+   {id:"d4",kind:"mcq",label:"Changing the perspective",q:"The finance director asks: “If we count only what the hospital itself saves, does the clinic still pay for itself?”",
+    opts:["Yes. Without the workday benefit, benefits are SR 240,000, net benefit is SR 90,000 and B:C is 1.6.","No. Without the productivity benefit the net benefit becomes negative.","The perspective never changes the result of a CBA.","Yes, because the B:C ratio stays 2.0 from any perspective."],
+    why:"From the hospital perspective, patients' workdays are not the hospital's saving. Benefits fall to SR 240,000, so net benefit is 240,000 − 150,000 = SR 90,000 and B:C is 1.6. The clinic still pays for itself."}
+  ]}
+];
+
+var J=[
+ {id:"j1",type:"CMA",label:"A CMA with unequal outcomes",
+  sc:"A company representative presents a “cost-minimization analysis” showing her antibiotic is SR 50 cheaper per course. In the trial she cites, her drug cured 78% of patients and the comparator cured 88%.",
+  q:"What is your objection?",
+  opts:["CMA is valid only when outcomes are equivalent. The cure rates differ, so a cost-effectiveness analysis is needed.","None. The cheaper drug should be chosen.","A CMA must be reported as a benefit-to-cost ratio.","Cure rates must be converted into riyals before any comparison is possible."],
+  why:"Cost-minimization assumes equal outcomes. A 10-point difference in cure rate breaks that assumption, so the cost must be weighed against the effect in a CEA."},
+ {id:"j2",type:"CEA",label:"Dominance",
+  sc:"A new inhaler costs SR 300 less per patient per year than the current one and prevents more exacerbations. A committee member asks you to calculate the ICER before the vote.",
+  q:"What do you reply?",
+  opts:["No ratio is needed. The new inhaler is dominant: it costs less and works better.","I will calculate it. A negative ICER means the new inhaler should be rejected.","The ICER cannot be calculated until exacerbations are converted to QALYs.","The current inhaler is dominant because it is already on the formulary."],
+  why:"When one option is cheaper and more effective, it dominates and the choice is clear. An ICER is used only when the better option also costs more."},
+ {id:"j3",type:"CUA",label:"Life-years vs. QALYs",
+  sc:"A cost-effectiveness analysis shows Drug B costs SR 5,000 per extra life-year compared with Drug A. Patients on B live 7 years at a utility of 0.5. Patients on A live 5 years at a utility of 0.8. Drug A is the cheaper of the two.",
+  q:"What should you point out before the vote?",
+  opts:["Adjusted for quality, B gives 3.5 QALYs and A gives 4.0. A is cheaper and gives more QALYs, so A dominates.","Drug B is cost-effective because SR 5,000 per life-year is low.","The two drugs are equivalent, so a cost-minimization analysis is enough.","Life-years and QALYs always rank treatments the same way."],
+  why:"7 × 0.5 = 3.5 QALYs for B and 5 × 0.8 = 4.0 QALYs for A. Counting life-years alone favours B, but once quality of life is included, A is both cheaper and better."},
+ {id:"j4",type:"CUA",label:"Two utility values for one health state",
+  sc:"Your cost-utility analysis used a utility of 0.40 for hospital dialysis, taken from a standard gamble study. A reviewer points to a time trade-off study that found 0.25 for the same health state.",
+  q:"What is the best response?",
+  opts:["Run the analysis with both values in a sensitivity analysis and report where each utility came from.","Use the average of the two and do not mention it.","Ignore the time trade-off value. Standard gamble is the gold standard, so the result is final.","Drop utilities and report life-years only."],
+  why:"Utilities depend on the method and on who was asked. Testing whether the conclusion holds across plausible values, and stating the source, is how the uncertainty is handled."},
+ {id:"j5",type:"CBA",label:"Allocating a fixed budget",
+  sc:"The hospital has SR 500,000 for new programs this year. Four proposals passed a cost-benefit analysis:",
+  table:{head:["Program","Cost (SR)","Net benefit (SR)","B:C"],rows:[["P","300,000","150,000","1.5"],["Q","200,000","180,000","1.9"],["R","250,000","200,000","1.8"],["S","500,000","300,000","1.6"]]},
+  q:"Which choice gives the hospital the most net benefit within the budget?",
+  opts:["Q and R. They have the best B:C ratios and together return SR 380,000.","S alone. It has the highest net benefit of any single program.","P and Q. Together they use the whole budget.","P and R. Together they return SR 350,000."],
+  why:"Under a fixed budget, fund in order of B:C ratio. Q and R cost SR 450,000 and return SR 380,000. S alone returns SR 300,000, P and Q return SR 330,000, and P and R cost SR 550,000, which is over budget."},
+ {id:"j6",type:"CBA",label:"Human capital and retired patients",
+  sc:"A cost-benefit analysis of a fall-prevention program for retired patients aged 70 and over valued its benefits with the human capital method and found almost no benefit.",
+  q:"What is the problem with that finding?",
+  opts:["Human capital values health through wages, so it undervalues people who are not employed. Use willingness-to-pay, or a cost-utility analysis.","Nothing. A program with no wage benefit should not be funded.","Human capital overvalues older patients, so the true benefit is even lower.","CBA cannot be applied to prevention programs."],
+  why:"The human capital method counts lost or regained earnings. Retired patients earn no wages, so pain, independence and avoided injury are valued at almost zero unless another method is used."},
+ {id:"j7",type:"CBA",label:"Benefits that arrive later",
+  sc:"A vaccination program costs SR 1 million this year. Its benefits arrive over the next 10 years. The analyst added the ten years of benefits at face value and reported a B:C ratio of 1.3.",
+  q:"What must be corrected?",
+  opts:["Future benefits must be discounted to present value. The ratio will fall and may drop below 1.","Nothing. A riyal is worth the same in any year.","This year's costs should be increased for inflation instead.","Only costs are ever discounted, never benefits."],
+  why:"When a study runs longer than one year, future costs and benefits are discounted to present value. Here the cost is paid now and the benefits come later, so discounting lowers the ratio."}
+];
+
+var ITEMS=[];
+K.forEach(function(k){ITEMS.push({id:k.id,type:k.type,comp:"K",max:10,label:"Round 1 · "+k.label,src:k});});
+CASES.forEach(function(c){c.steps.forEach(function(s){ITEMS.push({id:s.id,type:c.type,comp:s.kind==="num"?"S":"J",max:10,label:c.ref+" · "+s.label,src:s,parent:c});});});
+J.forEach(function(j){ITEMS.push({id:j.id,type:j.type,comp:"J",max:10,label:"Round 3 · "+j.label,src:j});});
+var BYID={};ITEMS.forEach(function(it){BYID[it.id]=it;});
+var TOTAL=ITEMS.reduce(function(a,b){return a+b.max;},0);
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fmt(n){return Number(n).toLocaleString("en-US",{maximumFractionDigits:2});}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function parseNum(s){
+  s=String(s||"").trim().replace(/[,\s ]/g,"").replace(/^(SR|SAR)/i,"").replace(/(SR|SAR|%)$/i,"");
+  var m=s.match(/^(-?\d+(?:\.\d+)?):1$/);if(m)s=m[1];
+  if(!/^-?\d*\.?\d+$/.test(s))return NaN;return Number(s);
+}
+function near(v,ans){return Math.abs(v-ans)<=Math.max(Math.abs(ans)*0.005,0.0051);}
+function hash(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return ("0000000"+(h>>>0).toString(16)).slice(-8);}
+var SALT="formulary-challenge-v1";
+function encodeResult(p){var b=btoa(unescape(encodeURIComponent(JSON.stringify(p)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");return "FC1."+b+"."+hash(b+SALT);}
+function decodeResult(code){
+  var m=String(code).trim().match(/^FC1\.([A-Za-z0-9_-]+)\.([0-9a-f]{8})$/);if(!m)return null;
+  try{var b=m[1].replace(/-/g,"+").replace(/_/g,"/");while(b.length%4)b+="=";
+    var p=JSON.parse(decodeURIComponent(escape(atob(b))));p.valid=(hash(m[1]+SALT)===m[2]);return p;}catch(e){return null;}
+}
+function store(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function load(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+
+/* ---------- state ---------- */
+var S=null,tick=Date.now();
+function fresh(name,sid){
+  var perm={};ITEMS.forEach(function(it){if(it.src.opts)perm[it.id]=shuffle([0,1,2,3]);});
+  return {v:1,screen:"play",name:name||"",sid:sid||"",korder:shuffle(K.map(function(k){return k.id;})),perm:perm,u:0,res:{},work:{},elapsed:0,date:new Date().toISOString().slice(0,10)};
+}
+function units(){
+  var u=[{kind:"intro",round:1}];
+  S.korder.forEach(function(id){u.push({kind:"k",id:id});});
+  u.push({kind:"intro",round:2});CASES.forEach(function(c){u.push({kind:"case",id:c.id});});
+  u.push({kind:"intro",round:3});J.forEach(function(j){u.push({kind:"j",id:j.id});});
+  return u;
+}
+function save(){if(!S)return;var now=Date.now();if(S.screen==="play")S.elapsed+=Math.min(now-tick,120000)/1000;tick=now;store("fc-state",S);}
+function score(){var t=0;for(var k in S.res)t+=S.res[k].pts;return t;}
+function record(id,pts,given,ok){var w=S.work[id]||{};S.res[id]={pts:pts,given:given,ok:ok,tries:w.tries||1,hint:!!w.hint};}
+
+var app=document.getElementById("app");
+function band(){
+  var meta=document.getElementById("bandMeta"),fill=document.getElementById("trackFill");
+  if(!S||S.screen==="start"||S.screen==="instructor"){meta.innerHTML="";fill.style.width="0";return;}
+  var done=Object.keys(S.res).length;
+  var u=units()[Math.min(S.u,units().length-1)],r=S.screen==="report"?"Final report":"Round "+(u.round||(u.kind==="k"?1:u.kind==="case"?2:3))+" of 3";
+  meta.innerHTML="<span>"+r+"</span><span><b>"+score()+"</b> / "+TOTAL+" pts</span>";
+  fill.style.width=(100*done/ITEMS.length)+"%";
+}
+function go(){save();render();window.scrollTo(0,0);var h=app.querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");try{h.focus({preventScroll:true});}catch(e){}}}
+
+/* ---------- screens ---------- */
+function stampHtml(r){
+  if(r.pts>=10)return '<span class="stamp ok">Approved</span>';
+  if(r.pts>0)return '<span class="stamp half">Accepted with revision</span>';
+  return '<span class="stamp no">Returned</span>';
+}
+function startScreen(){
+  var saved=load("fc-state"),resume=saved&&saved.v===1&&saved.screen==="play"&&Object.keys(saved.res||{}).length>0;
+  return '<section class="hero"><p class="eyebrow">Pharmacoeconomics · CMA · CEA · CUA · CBA</p>'+
+  '<h1>The committee meets at two. The requests are on your desk.</h1>'+
+  '<p class="lead">You are the pharmacist who advises the hospital’s Pharmacy and Therapeutics Committee. Decide how each request should be analysed, run the numbers, and defend the result.</p></section>'+
+  '<section class="form"><div class="form-head"><span>Agenda</span><span>'+ITEMS.length+' decisions · '+TOTAL+' points · about 25 minutes</span></div><div class="form-body">'+
+  '<ol class="rounds">'+
+  '<li><span class="n">1</span><span class="t">Sort the requests</span><span class="p">80 pts</span><span class="d">Eight requests arrive. Choose the right type of analysis for each one.</span></li>'+
+  '<li><span class="n">2</span><span class="t">Run the numbers</span><span class="p">160 pts</span><span class="d">Four full cases, one per analysis. Calculate totals, ICER, QALYs, ICUR, net benefit and B:C ratio, then recommend.</span></li>'+
+  '<li><span class="n">3</span><span class="t">Face the committee</span><span class="p">70 pts</span><span class="d">Seven challenges from committee members. Spot the flaw, interpret the result, allocate the budget.</span></li>'+
+  '</ol>'+
+  '<form id="startForm" class="fields" autocomplete="off"><div class="field"><label for="fName">Your name</label><input id="fName" maxlength="60" required></div>'+
+  '<div class="field"><label for="fSid">Student ID</label><input id="fSid" maxlength="20" inputmode="numeric"></div></form>'+
+  '<div class="row"><button class="btn" data-act="start">Start the meeting</button>'+(resume?'<button class="btn ghost" data-act="resume">Resume where I stopped</button>':'')+'</div>'+
+  '<p class="small">A calculator is allowed. Each calculation gets two attempts: 10 points on the first, 5 on the second. A hint costs 3 points.</p>'+
+  '</div></section>'+
+  '<p class="small">Teaching this course? Open the <a href="#instructor" data-act="instructor">instructor tools</a> to read students’ result codes.</p>';
+}
+function introScreen(u){
+  var t={1:["Round 1","Sort the requests","Each request needs one of the four analyses. Read what is being compared and how the outcome is measured, then choose. One attempt per request, 10 points each."],
+         2:["Round 2","Run the numbers","Four full cases. Enter each figure without units. You get two attempts per calculation, and a hint if you need one. Each case ends with a recommendation."],
+         3:["Round 3","Face the committee","Committee members will question the analyses in front of them. Choose the best response. One attempt each, 10 points."]}[u.round];
+  return '<section class="form"><div class="form-head"><span>'+t[0]+' of 3</span><span>'+COMP[u.round===1?"K":u.round===2?"S":"J"]+'</span></div><div class="form-body"><h2>'+t[1]+'</h2><p class="memo">'+t[2]+'</p><div class="row"><button class="btn" data-act="next">Begin</button></div></div></section>';
+}
+function kScreen(u){
+  var k=BYID[u.id].src,r=S.res[k.id],n=S.korder.indexOf(k.id)+1;
+  var h='<section class="form"><div class="form-head"><span>Request 1.'+n+' of 8</span><span>Which analysis?</span></div><div class="form-body"><h2>'+esc(k.label)+'</h2><p class="memo">'+esc(k.text)+'</p><div class="choices">';
+  Object.keys(TYPES).forEach(function(t){
+    var cls="choice";if(r){if(t===k.type)cls+=" right";else if(t===r.given)cls+=" wrong";}
+    h+='<button class="'+cls+'" data-act="pick" data-id="'+k.id+'" data-v="'+t+'"'+(r?" disabled":"")+'><span class="abbr">'+t+'</span><span class="full">'+TYPES[t]+'</span></button>';
+  });
+  h+='</div>';
+  if(r)h+=stampHtml(r)+'<p class="note '+(r.ok?"good":"bad")+'">'+(r.ok?"":"The right choice is <b>"+k.type+"</b>. ")+esc(k.why)+'</p><div class="row"><button class="btn" data-act="next">Next request</button></div>';
+  return h+'</div></section>';
+}
+function tableHtml(head,rows){
+  var h='<div class="tbl"><table><thead><tr>';head.forEach(function(c){h+='<th>'+esc(c)+'</th>';});h+='</tr></thead><tbody>';
+  rows.forEach(function(r){h+='<tr>';r.forEach(function(c,i){h+='<td'+(i?' class="numc"':'')+'>'+esc(c)+'</td>';});h+='</tr>';});
+  return h+'</tbody></table></div>';
+}
+function mcqHtml(item,act){
+  var s=item.src,r=S.res[item.id],perm=S.perm[item.id],h='<div class="options">';
+  perm.forEach(function(oi,pos){
+    var cls="choice";if(r){if(oi===0)cls+=" right";else if(oi===r.given)cls+=" wrong";}
+    h+='<button class="'+cls+'" data-act="'+act+'" data-id="'+item.id+'" data-v="'+oi+'"'+(r?" disabled":"")+'><span class="key">'+"ABCD"[pos]+'</span><span>'+esc(s.opts[oi])+'</span></button>';
+  });
+  h+='</div>';
+  if(r)h+=stampHtml(r)+'<p class="note '+(r.ok?"good":"bad")+'">'+esc(s.why)+'</p>';
+  return h;
+}
+function caseScreen(u){
+  var c=CASES.filter(function(x){return x.id===u.id;})[0];
+  var h='<section class="form"><div class="form-head"><span>'+c.ref+'</span><span>'+TYPES[c.type]+'</span></div><div class="form-body"><h2>'+esc(c.title)+'</h2><p class="memo">'+esc(c.memo)+'</p>'+tableHtml(c.head,c.rows);
+  var open=true,allDone=true;
+  c.steps.forEach(function(s,i){
+    var r=S.res[s.id],it=BYID[s.id];
+    if(!r&&!open)return;
+    h+='<div class="step"><span class="tag">Step '+(i+1)+' of '+c.steps.length+' · '+esc(s.label)+'</span><p class="q">'+esc(s.q)+'</p>';
+    if(s.kind==="num"){
+      if(r){
+        h+='<div class="done-line"><span>Your answer: '+esc(r.given)+'</span><span class="pts">'+r.pts+' / 10 pts</span></div>'+stampHtml(r)+'<p class="note '+(r.ok?"good":"bad")+'"><span class="mono">'+esc(s.sol)+'</span></p>';
+      }else{
+        var w=S.work[s.id]||{};
+        h+='<form class="num" data-form="num" data-id="'+s.id+'"><div class="box"><input id="in-'+s.id+'" inputmode="decimal" autocomplete="off" aria-label="'+esc(s.label)+'" value="'+esc(w.draft||"")+'"></div><span class="unit">'+esc(s.unit)+'</span><button class="btn" type="submit">Check</button>'+(w.hint?'':'<button class="btn ghost" type="button" data-act="hint" data-id="'+s.id+'">Hint (−3 pts)</button>')+'</form>';
+        if(w.msg)h+='<p class="note bad">'+esc(w.msg)+'</p>';
+        if(w.hint)h+='<p class="note hint">'+esc(s.hint)+'</p>';
+      }
+    }else{h+=mcqHtml(it,"opt");}
+    h+='</div>';
+    if(!r){open=false;allDone=false;}
+  });
+  if(allDone)h+='<div class="row"><button class="btn" data-act="next">'+(c.id==="D"?"Go to round 3":"Next case")+'</button></div>';
+  return h+'</div></section>';
+}
+function jScreen(u){
+  var it=BYID[u.id],j=it.src,n=J.indexOf(j)+1,r=S.res[j.id];
+  var h='<section class="form"><div class="form-head"><span>Challenge 3.'+n+' of 7</span><span>'+esc(j.label)+'</span></div><div class="form-body"><p class="memo">'+esc(j.sc)+'</p>';
+  if(j.table)h+=tableHtml(j.table.head,j.table.rows);
+  h+='<h2>'+esc(j.q)+'</h2>'+mcqHtml(it,"opt");
+  if(r)h+='<div class="row"><button class="btn" data-act="next">'+(n===7?"See my report":"Next challenge")+'</button></div>';
+  return h+'</div></section>';
+}
+function agg(key){
+  var o={};ITEMS.forEach(function(it){var k=it[key];o[k]=o[k]||{got:0,max:0};o[k].max+=it.max;o[k].got+=(S.res[it.id]?S.res[it.id].pts:0);});return o;
+}
+function barHtml(lbl,sub,a){
+  var p=Math.round(100*a.got/a.max),cls=p<50?"low":p<75?"mid":"";
+  return '<div class="bar '+cls+'"><span class="lbl">'+esc(lbl)+(sub?' <span>'+esc(sub)+'</span>':'')+'</span><span class="val">'+a.got+' / '+a.max+' · '+p+'%</span><span class="rail"><i style="width:'+p+'%"></i></span></div>';
+}
+function resultPayload(){
+  var hints=0,second=0;ITEMS.forEach(function(it){var r=S.res[it.id];if(r){if(r.hint)hints++;if(r.tries>1)second++;}});
+  return {v:1,n:S.name,i:S.sid,r:ITEMS.map(function(it){return S.res[it.id]?S.res[it.id].pts:0;}),h:hints,a:second,t:Math.round(S.elapsed),d:S.date};
+}
+function rank(p){return p>=85?["Chief pharmacoeconomist","The committee adopts your recommendations without amendment."]:p>=70?["Senior analyst","Sound work. A few items below need another look."]:p>=50?["Junior analyst","The basics are in place. Review the items below before the next meeting."]:["Trainee","Go back to the lecture notes, then sit the meeting again."];}
+function reportScreen(){
+  var sc=score(),p=Math.round(100*sc/TOTAL),rk=rank(p),c=agg("comp"),t=agg("type"),pay=resultPayload();
+  var mins=Math.max(1,Math.round(S.elapsed/60));
+  var h='<section class="hero"><p class="eyebrow">Meeting closed · '+esc(S.name||"Unnamed")+(S.sid?' · '+esc(S.sid):'')+' · '+esc(S.date)+'</p><h1>'+rk[0]+'</h1><p class="lead">'+rk[1]+'</p></section>'+
+  '<section class="form"><div class="form-head"><span>Score</span><span>'+mins+' min · '+pay.h+' hints · '+pay.a+' second attempts</span></div><div class="form-body"><div class="score-big">'+p+'%<small> '+sc+' / '+TOTAL+' pts</small></div>'+
+  '<div class="grid2"><div class="bars"><p class="eyebrow">By competency</p>'+["K","S","J"].map(function(k){return barHtml(COMP[k],COMPSUB[k],c[k]);}).join("")+'</div>'+
+  '<div class="bars"><p class="eyebrow">By type of analysis</p>'+Object.keys(TYPES).map(function(k){return barHtml(k,TYPES[k],t[k]);}).join("")+'</div></div></div></section>';
+  var missed=ITEMS.filter(function(it){return S.res[it.id]&&S.res[it.id].pts<it.max;});
+  h+='<section class="form"><div class="form-head"><span>Items to review</span><span>'+missed.length+' of '+ITEMS.length+'</span></div><div class="form-body">';
+  if(!missed.length)h+='<p>Full marks on every item.</p>';
+  else{h+='<div class="review">';missed.forEach(function(it){
+    var r=S.res[it.id],s=it.src,given,correct,why;
+    if(it.comp==="K"){given=r.given;correct=s.type+" ("+TYPES[s.type]+")";why=s.why;}
+    else if(s.kind==="num"){given=r.given;correct=s.sol;why="";}
+    else{given=s.opts[r.given];correct=s.opts[0];why=s.why;}
+    h+='<details><summary>'+esc(it.label)+'<span>'+r.pts+' / '+it.max+'</span></summary><div class="ans"><p><b>Your answer:</b> '+esc(given)+'</p><p><b>Correct:</b> '+esc(correct)+'</p>'+(why?'<p>'+esc(why)+'</p>':'')+'</div></details>';
+  });h+='</div>';}
+  h+='</div></section>'+
+  '<section class="form"><div class="form-head"><span>Result code</span><span>Send this to your instructor</span></div><div class="form-body"><p class="memo">This code holds your name, your score on every item, hints used and time taken. Copy it and send it as text.</p><div class="code" id="resCode">'+esc(encodeResult(pay))+'</div><div class="row"><button class="btn" data-act="copy" data-target="resCode">Copy code</button><span class="small" id="copyMsg" role="status"></span></div></div></section>'+
+  '<div class="row"><button class="btn ghost" data-act="again">Sit the meeting again</button></div>';
+  return h;
+}
+function instructorScreen(){
+  return '<section class="hero"><p class="eyebrow">Instructor tools</p><h1>Read result codes</h1><p class="lead">Paste the codes your students sent, one per line. The table shows each score by competency and by type of analysis. The copied CSV adds a column for every one of the '+ITEMS.length+' items.</p></section>'+
+  '<section class="form"><div class="form-head"><span>Result codes</span><span>One per line</span></div><div class="form-body"><textarea id="codes" aria-label="Result codes" placeholder="FC1.…"></textarea><div class="row"><button class="btn" data-act="decode">Read codes</button><button class="btn ghost" data-act="home">Back to the game</button></div><div id="decoded"></div></div></section>'+
+  '<p class="small">A code marked “altered” does not match its check digits, which means the text was edited after the game produced it. The check discourages casual editing. It is not secure against a determined student.</p>';
+}
+var lastCsv="";
+function decodeAll(){
+  var lines=document.getElementById("codes").value.split(/\s+/).filter(Boolean),out=document.getElementById("decoded");
+  if(!lines.length){out.innerHTML='<p class="note bad">Paste at least one result code first.</p>';return;}
+  var heads=["Name","ID","Date","Total %","Points","Choosing","Calculating","Judging","CMA","CEA","CUA","CBA","Hints","2nd tries","Minutes","Code"];
+  var csv=[heads.concat(ITEMS.map(function(it){return it.id;})).join(",")],h='<div class="tbl"><table><thead><tr>'+heads.map(function(x){return "<th>"+x+"</th>";}).join("")+'</tr></thead><tbody>',bad=0;
+  lines.forEach(function(code){
+    var p=decodeResult(code);if(!p||!Array.isArray(p.r)||p.r.length!==ITEMS.length){bad++;return;}
+    var tot=0,c={K:0,S:0,J:0},t={CMA:0,CEA:0,CUA:0,CBA:0},cm={K:0,S:0,J:0},tm={CMA:0,CEA:0,CUA:0,CBA:0};
+    ITEMS.forEach(function(it,i){var v=Math.max(0,Math.min(it.max,Number(p.r[i])||0));tot+=v;c[it.comp]+=v;t[it.type]+=v;cm[it.comp]+=it.max;tm[it.type]+=it.max;});
+    var pc=function(a,b){return Math.round(100*a/b)+"%";};
+    var row=[p.n||"",p.i||"",p.d||"",Math.round(100*tot/TOTAL),tot,pc(c.K,cm.K),pc(c.S,cm.S),pc(c.J,cm.J),pc(t.CMA,tm.CMA),pc(t.CEA,tm.CEA),pc(t.CUA,tm.CUA),pc(t.CBA,tm.CBA),p.h||0,p.a||0,Math.round((p.t||0)/60),p.valid?"valid":"altered"];
+    h+="<tr>"+row.map(function(x){return "<td>"+esc(x)+"</td>";}).join("")+"</tr>";
+    csv.push(row.concat(p.r).map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';}).join(","));
+  });
+  h+="</tbody></table></div>";lastCsv=csv.join("\n");
+  out.innerHTML=(csv.length>1?h+'<div class="row" style="margin-top:12px"><button class="btn" data-act="copycsv">Copy as CSV</button><span class="small" id="copyMsg" role="status"></span></div>':"")+(bad?'<p class="note bad" style="margin-top:12px">'+bad+' line'+(bad>1?"s":"")+' could not be read. Check that each code was copied whole.</p>':"");
+}
+function render(){
+  var h;
+  if(!S||S.screen==="start")h=startScreen();
+  else if(S.screen==="instructor")h=instructorScreen();
+  else if(S.screen==="report")h=reportScreen();
+  else{var us=units(),u=us[S.u];h=u.kind==="intro"?introScreen(u):u.kind==="k"?kScreen(u):u.kind==="case"?caseScreen(u):jScreen(u);}
+  app.innerHTML=h;band();
+}
+
+/* ---------- actions ---------- */
+function copyText(text,sourceEl){
+  var msg=document.getElementById("copyMsg"),ok=function(){if(msg)msg.textContent="Copied.";},fail=function(){
+    if(sourceEl){var r=document.createRange();r.selectNodeContents(sourceEl);var s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+    if(msg)msg.textContent=sourceEl?"Copying was blocked. The text is selected, so copy it by hand.":"Copying was blocked in this view.";};
+  try{navigator.clipboard.writeText(text).then(ok,fail);}catch(e){fail();}
+}
+app.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b)return;var act=b.dataset.act,id=b.dataset.id;
+  if(act==="start"){var n=document.getElementById("fName"),sid=document.getElementById("fSid");if(!n.value.trim()){n.focus();n.reportValidity&&n.reportValidity();return;}S=fresh(n.value.trim(),sid.value.trim());tick=Date.now();go();}
+  else if(act==="resume"){S=load("fc-state");tick=Date.now();go();}
+  else if(act==="instructor"){e.preventDefault();S=S||{};S.prev=S.screen;S.screen="instructor";render();window.scrollTo(0,0);}
+  else if(act==="home"){if(S&&S.prev&&S.prev!=="instructor"&&S.v){S.screen=S.prev;}else{S=null;}try{history.replaceState(null,"",location.pathname+location.search);}catch(err){}render();}
+  else if(act==="next"){var us=units();if(S.u>=us.length-1){S.screen="report";}else S.u++;go();}
+  else if(act==="pick"){if(S.res[id])return;var k=BYID[id].src,ok=b.dataset.v===k.type;record(id,ok?10:0,b.dataset.v,ok);save();render();}
+  else if(act==="opt"){if(S.res[id])return;var v=Number(b.dataset.v);record(id,v===0?10:0,v,v===0);save();render();}
+  else if(act==="hint"){var inp=document.getElementById("in-"+id);S.work[id]=S.work[id]||{};S.work[id].hint=true;if(inp)S.work[id].draft=inp.value;save();render();var i2=document.getElementById("in-"+id);if(i2)i2.focus();}
+  else if(act==="copy"){var el=document.getElementById(b.dataset.target);copyText(el.textContent,el);}
+  else if(act==="copycsv"){copyText(lastCsv,null);}
+  else if(act==="decode"){decodeAll();}
+  else if(act==="again"){store("fc-state",null);S=null;render();window.scrollTo(0,0);}
+});
+app.addEventListener("submit",function(e){
+  e.preventDefault();var f=e.target;
+  if(f.id==="startForm"){app.querySelector('[data-act="start"]').click();return;}
+  if(f.dataset.form!=="num")return;
+  var id=f.dataset.id,s=BYID[id].src,inp=f.querySelector("input"),raw=inp.value.trim(),v=parseNum(raw),w=S.work[id]=S.work[id]||{};
+  if(isNaN(v)){w.msg="Enter a number only, for example 12500 or 2.5.";w.draft=raw;render();document.getElementById("in-"+id).focus();return;}
+  w.tries=(w.tries||0)+1;
+  if(near(v,s.ans)){record(id,Math.max(0,(w.tries===1?10:5)-(w.hint?3:0)),raw,true);}
+  else if(w.tries>=2){record(id,0,raw,false);}
+  else{w.msg="Not yet. One more attempt for half points.";w.draft="";save();render();document.getElementById("in-"+id).focus();return;}
+  save();render();
+  var nextIn=app.querySelector(".num input");if(nextIn)nextIn.focus();
+});
+
+/* ---------- boot ---------- */
+function start(data){
+  if(data&&data.S&&data.S.v===1)S=data.S;
+  if(location.hash==="#instructor"){S=S||{};S.prev=S.screen;S.screen="instructor";}
+  render();
+}
+try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(function(){return {S:S};});}catch(e){}
+if(window.claude&&window.claude.hot&&window.claude.hot.ready)window.claude.hot.ready(start);
+else start((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
+window.addEventListener("hashchange",function(){if(location.hash==="#instructor"&&(!S||S.screen!=="instructor")){S=S||{};S.prev=S.screen;S.screen="instructor";render();}});
+})();
+</script>
+</body>
+</html>
