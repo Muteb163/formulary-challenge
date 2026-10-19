@@ -345,8 +345,7 @@ function startScreen(){
   '<div class="field"><label for="fSid">Student ID</label><input id="fSid" maxlength="20" inputmode="numeric"></div></form>'+
   '<div class="row"><button class="btn" data-act="start">Start the meeting</button>'+(resume?'<button class="btn ghost" data-act="resume">Resume where I stopped</button>':'')+'</div>'+
   '<p class="small">A calculator is allowed. Each calculation gets two attempts: 10 points on the first, 5 on the second. A hint costs 3 points.</p>'+
-  '</div></section>'+
-  '<p class="small">Teaching this course? Open the <a href="#instructor" data-act="instructor">instructor tools</a> to read students’ result codes.</p>';
+  '</div></section>';
 }
 function introScreen(u){
   var t={1:["Round 1","Sort the requests","Each request needs one of the four analyses. Read what is being compared and how the outcome is measured, then choose. One attempt per request, 10 points each."],
@@ -446,7 +445,28 @@ function reportScreen(){
   '<div class="row"><button class="btn ghost" data-act="again">Sit the meeting again</button></div>';
   return h;
 }
+var PASS_HASH="1827ae60c0921561d6963cea616c3f106c2adec5d990810d642179e987a0a762",unlocked=false,lockMsg="";
+try{unlocked=sessionStorage.getItem("fc-unlocked")===PASS_HASH;}catch(e){}
+function lockScreen(){
+  return '<section class="hero"><p class="eyebrow">Instructor tools</p><h1>Enter the instructor passcode</h1><p class="lead">This page reads students\u2019 result codes. It is for the course instructor only.</p></section>'+
+  '<section class="form"><div class="form-head"><span>Passcode</span><span>Instructor access</span></div><div class="form-body">'+
+  '<form id="lockForm" class="fields" autocomplete="off"><div class="field"><label for="pass">Passcode</label><input id="pass" type="password" autocomplete="current-password" required></div></form>'+
+  (lockMsg?'<p class="note bad" role="alert">'+esc(lockMsg)+'</p>':'')+
+  '<div class="row"><button class="btn" data-act="unlock">Unlock</button><button class="btn ghost" data-act="home">Back to the game</button></div></div></section>';
+}
+function unlock(){
+  var inp=document.getElementById("pass"),v=inp?inp.value:"";
+  if(!v){if(inp)inp.focus();return;}
+  if(!(window.crypto&&crypto.subtle)){lockMsg="This browser cannot check the passcode. Open the page over https in an up-to-date browser.";render();return;}
+  crypto.subtle.digest("SHA-256",new TextEncoder().encode("fc-instructor-v1:"+v)).then(function(buf){
+    var hex=Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");
+    if(hex===PASS_HASH){unlocked=true;lockMsg="";try{sessionStorage.setItem("fc-unlocked",PASS_HASH);}catch(e){}}
+    else lockMsg="That passcode is not correct. Check it and try again.";
+    render();var f=document.getElementById(unlocked?"codes":"pass");if(f)f.focus();
+  });
+}
 function instructorScreen(){
+  if(!unlocked)return lockScreen();
   return '<section class="hero"><p class="eyebrow">Instructor tools</p><h1>Read result codes</h1><p class="lead">Paste the codes your students sent, one per line. The table shows each score by competency and by type of analysis. The copied CSV adds a column for every one of the '+ITEMS.length+' items.</p></section>'+
   '<section class="form"><div class="form-head"><span>Result codes</span><span>One per line</span></div><div class="form-body"><textarea id="codes" aria-label="Result codes" placeholder="FC1.…"></textarea><div class="row"><button class="btn" data-act="decode">Read codes</button><button class="btn ghost" data-act="home">Back to the game</button></div><div id="decoded"></div></div></section>'+
   '<p class="small">A code marked “altered” does not match its check digits, which means the text was edited after the game produced it. The check discourages casual editing. It is not secure against a determined student.</p>';
@@ -498,11 +518,13 @@ app.addEventListener("click",function(e){
   else if(act==="copy"){var el=document.getElementById(b.dataset.target);copyText(el.textContent,el);}
   else if(act==="copycsv"){copyText(lastCsv,null);}
   else if(act==="decode"){decodeAll();}
+  else if(act==="unlock"){unlock();}
   else if(act==="again"){store("fc-state",null);S=null;render();window.scrollTo(0,0);}
 });
 app.addEventListener("submit",function(e){
   e.preventDefault();var f=e.target;
   if(f.id==="startForm"){app.querySelector('[data-act="start"]').click();return;}
+  if(f.id==="lockForm"){unlock();return;}
   if(f.dataset.form!=="num")return;
   var id=f.dataset.id,s=BYID[id].src,inp=f.querySelector("input"),raw=inp.value.trim(),v=parseNum(raw),w=S.work[id]=S.work[id]||{};
   if(isNaN(v)){w.msg="Enter a number only, for example 12500 or 2.5.";w.draft=raw;render();document.getElementById("in-"+id).focus();return;}

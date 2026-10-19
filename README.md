@@ -8,4 +8,4 @@ A serious game for teaching pharmacoeconomic analysis to pharmacy students. Play
 
 Play it at https://muteb163.github.io/formulary-challenge/
 
-The game is a single HTML file with no server. At the end, each player gets a result code; instructors can read codes at the `#instructor` page.
+The game is a single HTML file with no server. At the end, each player gets a result code; instructors read codes on the passcode-protected `#instructor` page.
